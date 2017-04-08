@@ -38,9 +38,15 @@ public class SeckillController {
         return "list"; // /WEB-INF/jsp/"list".jsp
     }
 
-    @RequestMapping(value = "/detail/{seckillId}", method = RequestMethod.GET)
-    public String Detail(@PathVariable("seckillId") Long seckillId, Model model) {
-
+    /**
+     * 获取秒杀商品详情
+     *
+     * @param seckillId
+     * @param model
+     * @return
+     */
+    @RequestMapping(value = "/{seckillId}/detail", method = RequestMethod.GET)
+    public String detail(@PathVariable("seckillId") Long seckillId, Model model) {
         if (seckillId == null) {
             return "redirect:/seckill/list";
         }
@@ -53,10 +59,10 @@ public class SeckillController {
     }
 
     //ajax json
-    @RequestMapping(value = "/exposer/{seckillId}", method = RequestMethod.POST,
-            produces = {"application/json;charset=utf8"})
+    @RequestMapping(value = "/{seckillId}/exposer", method = RequestMethod.POST,
+            produces = {"application/json;charset=utf-8"})
     @ResponseBody
-    public SeckillResult<Exposer> exposer(Long seckillId) {
+    public SeckillResult<Exposer> exposer(@PathVariable("seckillId") Long seckillId) {
         SeckillResult<Exposer> result;
         try {
             Exposer exposer = seckillService.exportSeckillUrl(seckillId);
@@ -68,15 +74,17 @@ public class SeckillController {
         return result;
     }
 
-    @RequestMapping(value = "/{seckillId}/{md5}/excution", method = RequestMethod.POST,
+    @RequestMapping(value = "/{seckillId}/{md5}/execution", method = RequestMethod.POST,
             produces = {"application/json;charset=utf8"})
     @ResponseBody
     public SeckillResult<SeckillExecution> excute(@PathVariable("seckillId") Long seckillId,
                                                   @PathVariable("md5") String md5,
-                                                  @CookieValue(value = "killphone", required = false) Long phone) {
+                                                  @CookieValue(value = "userPhone", required = false) Long phone) {
         SeckillResult<SeckillExecution> result;
         if (phone == null) {
+            System.out.println("手机号未注册");
             return new SeckillResult<SeckillExecution>(false, "未注册");
+
         }
         try {
             SeckillExecution execution = seckillService.excuteSeckill(seckillId, phone, md5);
@@ -92,11 +100,14 @@ public class SeckillController {
             return new SeckillResult<SeckillExecution>(false, execution);
         }
     }
-    //获取系统时间
-    @RequestMapping(value = "/time/now",method = RequestMethod.GET)
-    public SeckillResult<Long> time()
-    {
-        Date now=new Date();
-        return new SeckillResult<Long>(true,now.getTime());
+    /**
+     * 获取系统当前时间
+     * @return
+     */
+    @RequestMapping(value = "/time/now", method = RequestMethod.GET)
+    @ResponseBody
+    public SeckillResult<Long> time() {
+        Date now = new Date();
+        return new SeckillResult<Long>(true, now.getTime());
     }
 }
